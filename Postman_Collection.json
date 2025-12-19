@@ -1,0 +1,350 @@
+{
+  "info": {
+    "name": "二手交易平台API测试",
+    "description": "二手交易平台单体版完整API测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "用户管理",
+      "item": [
+        {
+          "name": "注册卖家",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"seller01\",\n  \"password\": \"123456\",\n  \"email\": \"seller01@example.com\",\n  \"phone\": \"13800138001\",\n  \"address\": \"浙江省杭州市西湖区\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/users", "host": ["localhost"], "port": "8080", "path": ["api", "users"]}
+          }
+        },
+        {
+          "name": "注册买家",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer01\",\n  \"password\": \"123456\",\n  \"email\": \"buyer01@example.com\",\n  \"phone\": \"13900139001\",\n  \"address\": \"浙江省杭州市滨江区\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/users", "host": ["localhost"], "port": "8080", "path": ["api", "users"]}
+          }
+        },
+        {
+          "name": "卖家登录",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"seller01\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/users/login", "host": ["localhost"], "port": "8080", "path": ["api", "users", "login"]}
+          }
+        },
+        {
+          "name": "买家登录",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer01\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/users/login", "host": ["localhost"], "port": "8080", "path": ["api", "users", "login"]}
+          }
+        },
+        {
+          "name": "获取所有用户",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/users", "host": ["localhost"], "port": "8080", "path": ["api", "users"]}
+          }
+        },
+        {
+          "name": "根据ID获取用户",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/users/1", "host": ["localhost"], "port": "8080", "path": ["api", "users", "1"]}
+          }
+        },
+        {
+          "name": "根据用户名获取用户",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/users/username/seller01", "host": ["localhost"], "port": "8080", "path": ["api", "users", "username", "seller01"]}
+          }
+        },
+        {
+          "name": "更新用户信息",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"seller01\",\n  \"password\": \"123456\",\n  \"email\": \"seller01_new@example.com\",\n  \"phone\": \"13800138002\",\n  \"address\": \"浙江省杭州市西湖区新地址\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/users/1", "host": ["localhost"], "port": "8080", "path": ["api", "users", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "商品管理",
+      "item": [
+        {
+          "name": "发布商品-iPhone",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"二手iPhone 13 128GB\",\n  \"description\": \"九成新，无划痕，功能完好，原装充电器\",\n  \"price\": 3999.00,\n  \"category\": \"数码产品\",\n  \"stock\": 1,\n  \"imageUrl\": \"http://example.com/iphone13.jpg\",\n  \"sellerId\": 1\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/products", "host": ["localhost"], "port": "8080", "path": ["api", "products"]}
+          }
+        },
+        {
+          "name": "发布商品-MacBook",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MacBook Pro 2020 13寸\",\n  \"description\": \"8G内存，256G硬盘，M1芯片，成色好\",\n  \"price\": 6999.00,\n  \"category\": \"数码产品\",\n  \"stock\": 1,\n  \"imageUrl\": \"http://example.com/macbook.jpg\",\n  \"sellerId\": 1\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/products", "host": ["localhost"], "port": "8080", "path": ["api", "products"]}
+          }
+        },
+        {
+          "name": "发布商品-自行车",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"捷安特山地自行车\",\n  \"description\": \"骑行不到500公里，几乎全新\",\n  \"price\": 1200.00,\n  \"category\": \"运动器材\",\n  \"stock\": 1,\n  \"imageUrl\": \"http://example.com/bike.jpg\",\n  \"sellerId\": 1\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/products", "host": ["localhost"], "port": "8080", "path": ["api", "products"]}
+          }
+        },
+        {
+          "name": "获取所有商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products", "host": ["localhost"], "port": "8080", "path": ["api", "products"]}
+          }
+        },
+        {
+          "name": "获取上架商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products/status/1", "host": ["localhost"], "port": "8080", "path": ["api", "products", "status", "1"]}
+          }
+        },
+        {
+          "name": "根据ID获取商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products/1", "host": ["localhost"], "port": "8080", "path": ["api", "products", "1"]}
+          }
+        },
+        {
+          "name": "根据卖家获取商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products/seller/1", "host": ["localhost"], "port": "8080", "path": ["api", "products", "seller", "1"]}
+          }
+        },
+        {
+          "name": "根据类别获取商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products/category/数码产品", "host": ["localhost"], "port": "8080", "path": ["api", "products", "category", "数码产品"]}
+          }
+        },
+        {
+          "name": "搜索商品",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/products/search?keyword=iPhone", "host": ["localhost"], "port": "8080", "path": ["api", "products", "search"], "query": [{"key": "keyword", "value": "iPhone"}]}
+          }
+        },
+        {
+          "name": "更新商品",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"二手iPhone 13 128GB - 降价啦\",\n  \"description\": \"九成新，无划痕，功能完好，原装充电器，急售\",\n  \"price\": 3799.00,\n  \"category\": \"数码产品\",\n  \"stock\": 1,\n  \"imageUrl\": \"http://example.com/iphone13.jpg\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/products/1", "host": ["localhost"], "port": "8080", "path": ["api", "products", "1"]}
+          }
+        },
+        {
+          "name": "商品下架",
+          "request": {
+            "method": "PUT",
+            "url": {"raw": "http://localhost:8080/api/products/1/status/0", "host": ["localhost"], "port": "8080", "path": ["api", "products", "1", "status", "0"]}
+          }
+        },
+        {
+          "name": "商品上架",
+          "request": {
+            "method": "PUT",
+            "url": {"raw": "http://localhost:8080/api/products/1/status/1", "host": ["localhost"], "port": "8080", "path": ["api", "products", "1", "status", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "订单管理",
+      "item": [
+        {
+          "name": "创建订单",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerId\": 2,\n  \"productId\": 1,\n  \"shippingAddress\": \"浙江省杭州市滨江区XX路XX号\",\n  \"contactPhone\": \"13900139001\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/orders", "host": ["localhost"], "port": "8080", "path": ["api", "orders"]}
+          }
+        },
+        {
+          "name": "支付订单",
+          "request": {
+            "method": "PUT",
+            "url": {"raw": "http://localhost:8080/api/orders/1/pay", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "1", "pay"]}
+          }
+        },
+        {
+          "name": "发货",
+          "request": {
+            "method": "PUT",
+            "url": {"raw": "http://localhost:8080/api/orders/1/ship", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "1", "ship"]}
+          }
+        },
+        {
+          "name": "确认收货",
+          "request": {
+            "method": "PUT",
+            "url": {"raw": "http://localhost:8080/api/orders/1/finish", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "1", "finish"]}
+          }
+        },
+        {
+          "name": "取消订单",
+          "request": {
+            "method": "DELETE",
+            "url": {"raw": "http://localhost:8080/api/orders/1", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "1"]}
+          }
+        },
+        {
+          "name": "获取所有订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders", "host": ["localhost"], "port": "8080", "path": ["api", "orders"]}
+          }
+        },
+        {
+          "name": "根据ID获取订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders/1", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "1"]}
+          }
+        },
+        {
+          "name": "根据订单号获取订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders/orderNo/ORD1734506400000ABCD1234", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "orderNo", "ORD1734506400000ABCD1234"]}
+          }
+        },
+        {
+          "name": "获取买家订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders/buyer/2", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "buyer", "2"]}
+          }
+        },
+        {
+          "name": "获取卖家订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders/seller/1", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "seller", "1"]}
+          }
+        },
+        {
+          "name": "根据状态获取订单",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/orders/status/1", "host": ["localhost"], "port": "8080", "path": ["api", "orders", "status", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "评论管理",
+      "item": [
+        {
+          "name": "发布评论",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": 1,\n  \"userId\": 2,\n  \"content\": \"卖家很好，手机成色不错，物流也很快！\",\n  \"rating\": 5\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/comments", "host": ["localhost"], "port": "8080", "path": ["api", "comments"]}
+          }
+        },
+        {
+          "name": "获取所有评论",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/comments", "host": ["localhost"], "port": "8080", "path": ["api", "comments"]}
+          }
+        },
+        {
+          "name": "根据ID获取评论",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/comments/1", "host": ["localhost"], "port": "8080", "path": ["api", "comments", "1"]}
+          }
+        },
+        {
+          "name": "获取商品评论",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/comments/product/1", "host": ["localhost"], "port": "8080", "path": ["api", "comments", "product", "1"]}
+          }
+        },
+        {
+          "name": "获取用户评论",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/comments/user/2", "host": ["localhost"], "port": "8080", "path": ["api", "comments", "user", "2"]}
+          }
+        },
+        {
+          "name": "获取订单评论",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8080/api/comments/order/1", "host": ["localhost"], "port": "8080", "path": ["api", "comments", "order", "1"]}
+          }
+        },
+        {
+          "name": "删除评论",
+          "request": {
+            "method": "DELETE",
+            "url": {"raw": "http://localhost:8080/api/comments/1", "host": ["localhost"], "port": "8080", "path": ["api", "comments", "1"]}
+          }
+        }
+      ]
+    }
+  ]
+}
