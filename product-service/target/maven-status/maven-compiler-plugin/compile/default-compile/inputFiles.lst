@@ -1,0 +1,8 @@
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/ProductServiceApplication.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/common/Result.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/controller/ProductController.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/entity/Product.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/exception/BusinessException.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/exception/GlobalExceptionHandler.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/repository/ProductRepository.java
+/mnt/share/secondhand-microservices/product-service/src/main/java/com/zjgsu/lll/secondhand/service/ProductService.java

@@ -1,0 +1,159 @@
+2025-12-20 22:01:38,914 INFO [PUSH] Task merge for Service{namespace='dev', group='DEFAULT_GROUP', name='order-service', ephemeral=true, revision=2}
+
+2025-12-20 23:00:27,701 INFO [PUSH-SUCC] 1341ms, all delay time 2059ms for subscriber 172.18.0.6, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-20 23:21:53,416 ERROR [PUSH-FAIL] 261ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Stream is already completed, no further calls are allowed, target=172.18.0.6
+
+2025-12-20 23:21:54,117 ERROR Reason detail: 
+
+java.lang.IllegalStateException: Stream is already completed, no further calls are allowed
+	at com.google.common.base.Preconditions.checkState(Preconditions.java:508)
+	at io.grpc.stub.ServerCalls$ServerCallStreamObserverImpl.onNext(ServerCalls.java:375)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestNoAck(GrpcConnection.java:62)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestInner(GrpcConnection.java:94)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.asyncRequest(GrpcConnection.java:117)
+	at com.alibaba.nacos.core.remote.RpcPushService.pushWithCallback(RpcPushService.java:55)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorRpcImpl.doPushWithCallback(PushExecutorRpcImpl.java:54)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorDelegate.doPushWithCallback(PushExecutorDelegate.java:53)
+	at com.alibaba.nacos.naming.push.v2.task.PushExecuteTask.run(PushExecuteTask.java:68)
+	at com.alibaba.nacos.common.task.engine.TaskExecuteWorker$InnerWorker.run(TaskExecuteWorker.java:120)
+2025-12-20 23:21:55,304 ERROR [PUSH-FAIL] 108ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Stream is already completed, no further calls are allowed, target=172.18.0.6
+
+2025-12-20 23:21:55,310 ERROR Reason detail: 
+
+java.lang.IllegalStateException: Stream is already completed, no further calls are allowed
+	at com.google.common.base.Preconditions.checkState(Preconditions.java:508)
+	at io.grpc.stub.ServerCalls$ServerCallStreamObserverImpl.onNext(ServerCalls.java:375)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestNoAck(GrpcConnection.java:62)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestInner(GrpcConnection.java:94)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.asyncRequest(GrpcConnection.java:117)
+	at com.alibaba.nacos.core.remote.RpcPushService.pushWithCallback(RpcPushService.java:55)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorRpcImpl.doPushWithCallback(PushExecutorRpcImpl.java:54)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorDelegate.doPushWithCallback(PushExecutorDelegate.java:53)
+	at com.alibaba.nacos.naming.push.v2.task.PushExecuteTask.run(PushExecuteTask.java:68)
+	at com.alibaba.nacos.common.task.engine.TaskExecuteWorker$InnerWorker.run(TaskExecuteWorker.java:120)
+2025-12-20 23:21:58,739 ERROR [PUSH-FAIL] 5591ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=3}, reason=Timeout After 5000 milliseconds,requestId =3, target=172.18.0.6
+
+2025-12-20 23:21:58,746 ERROR Reason detail: 
+
+java.util.concurrent.TimeoutException: Timeout After 5000 milliseconds,requestId =3
+	at com.alibaba.nacos.api.remote.DefaultRequestFuture$TimeoutHandler.run(DefaultRequestFuture.java:194)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+2025-12-20 23:22:00,233 ERROR [PUSH-FAIL] 5037ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=3}, reason=Timeout After 5000 milliseconds,requestId =4, target=172.18.0.6
+
+2025-12-20 23:22:00,240 ERROR Reason detail: 
+
+java.util.concurrent.TimeoutException: Timeout After 5000 milliseconds,requestId =4
+	at com.alibaba.nacos.api.remote.DefaultRequestFuture$TimeoutHandler.run(DefaultRequestFuture.java:194)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+2025-12-20 23:22:06,500 INFO [PUSH-SUCC] 888ms, all delay time 1471ms for subscriber 172.18.0.6, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=3}, originalSize=1, DataSize=1
+
+2025-12-20 23:29:45,941 ERROR [PUSH-FAIL] 5106ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=4}, reason=Timeout After 5000 milliseconds,requestId =6, target=172.18.0.6
+
+2025-12-20 23:29:45,999 ERROR Reason detail: 
+
+java.util.concurrent.TimeoutException: Timeout After 5000 milliseconds,requestId =6
+	at com.alibaba.nacos.api.remote.DefaultRequestFuture$TimeoutHandler.run(DefaultRequestFuture.java:194)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+2025-12-20 23:43:05,536 INFO [PUSH] Task merge for Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}
+
+2025-12-20 23:45:12,451 INFO [PUSH-SUCC] 640ms, all delay time 1204ms for subscriber 172.18.0.5, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, originalSize=1, DataSize=1
+
+2025-12-21 10:14:53,435 INFO [PUSH-SUCC] 853ms, all delay time 1445ms for subscriber 172.18.0.6, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 10:18:08,263 ERROR [PUSH-FAIL] 110ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Stream is already completed, no further calls are allowed, target=172.18.0.6
+
+2025-12-21 10:18:08,783 ERROR Reason detail: 
+
+java.lang.IllegalStateException: Stream is already completed, no further calls are allowed
+	at com.google.common.base.Preconditions.checkState(Preconditions.java:508)
+	at io.grpc.stub.ServerCalls$ServerCallStreamObserverImpl.onNext(ServerCalls.java:375)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestNoAck(GrpcConnection.java:62)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestInner(GrpcConnection.java:94)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.asyncRequest(GrpcConnection.java:117)
+	at com.alibaba.nacos.core.remote.RpcPushService.pushWithCallback(RpcPushService.java:55)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorRpcImpl.doPushWithCallback(PushExecutorRpcImpl.java:54)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorDelegate.doPushWithCallback(PushExecutorDelegate.java:53)
+	at com.alibaba.nacos.naming.push.v2.task.PushExecuteTask.run(PushExecuteTask.java:68)
+	at com.alibaba.nacos.common.task.engine.TaskExecuteWorker$InnerWorker.run(TaskExecuteWorker.java:120)
+2025-12-21 10:18:13,156 ERROR [PUSH-FAIL] 5003ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Timeout After 5000 milliseconds,requestId =5, target=172.18.0.6
+
+2025-12-21 10:18:13,184 ERROR Reason detail: 
+
+java.util.concurrent.TimeoutException: Timeout After 5000 milliseconds,requestId =5
+	at com.alibaba.nacos.api.remote.DefaultRequestFuture$TimeoutHandler.run(DefaultRequestFuture.java:194)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+2025-12-21 10:39:17,173 INFO [PUSH-SUCC] 280ms, all delay time 795ms for subscriber 172.18.0.4, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 11:03:19,033 INFO [PUSH] Task merge for Service{namespace='dev', group='DEFAULT_GROUP', name='comment-service', ephemeral=true, revision=2}
+
+2025-12-21 11:04:34,905 INFO [PUSH] Task merge for Service{namespace='dev', group='DEFAULT_GROUP', name='user-service', ephemeral=true, revision=2}
+
+2025-12-21 11:06:35,147 INFO [PUSH-SUCC] 1075ms, all delay time 1623ms for subscriber 172.18.0.6, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 11:09:42,190 INFO [PUSH-SUCC] 857ms, all delay time 1386ms for subscriber 172.18.0.4, Service{namespace='dev', group='DEFAULT_GROUP', name='order-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 11:30:33,430 INFO [PUSH-SUCC] 489ms, all delay time 1117ms for subscriber 172.18.0.5, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 11:37:49,126 ERROR [PUSH-FAIL] 129ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Stream is already completed, no further calls are allowed, target=172.18.0.5
+
+2025-12-21 11:37:49,274 ERROR Reason detail: 
+
+java.lang.IllegalStateException: Stream is already completed, no further calls are allowed
+	at com.google.common.base.Preconditions.checkState(Preconditions.java:508)
+	at io.grpc.stub.ServerCalls$ServerCallStreamObserverImpl.onNext(ServerCalls.java:375)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestNoAck(GrpcConnection.java:62)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.sendRequestInner(GrpcConnection.java:94)
+	at com.alibaba.nacos.core.remote.grpc.GrpcConnection.asyncRequest(GrpcConnection.java:117)
+	at com.alibaba.nacos.core.remote.RpcPushService.pushWithCallback(RpcPushService.java:55)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorRpcImpl.doPushWithCallback(PushExecutorRpcImpl.java:54)
+	at com.alibaba.nacos.naming.push.v2.executor.PushExecutorDelegate.doPushWithCallback(PushExecutorDelegate.java:53)
+	at com.alibaba.nacos.naming.push.v2.task.PushExecuteTask.run(PushExecuteTask.java:68)
+	at com.alibaba.nacos.common.task.engine.TaskExecuteWorker$InnerWorker.run(TaskExecuteWorker.java:120)
+2025-12-21 11:37:54,013 ERROR [PUSH-FAIL] 5017ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, reason=Timeout After 5000 milliseconds,requestId =4, target=172.18.0.5
+
+2025-12-21 11:37:54,053 ERROR Reason detail: 
+
+java.util.concurrent.TimeoutException: Timeout After 5000 milliseconds,requestId =4
+	at com.alibaba.nacos.api.remote.DefaultRequestFuture$TimeoutHandler.run(DefaultRequestFuture.java:194)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+2025-12-21 11:55:18,669 INFO [PUSH-SUCC] 793ms, all delay time 1335ms for subscriber 172.18.0.4, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 11:58:04,005 INFO [PUSH-SUCC] 509ms, all delay time 1099ms for subscriber 172.18.0.5, Service{namespace='dev', group='DEFAULT_GROUP', name='order-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1
+
+2025-12-21 12:00:40,692 INFO [PUSH-SUCC] 140ms, all delay time 645ms, SLA 650ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, originalSize=0, DataSize=0, target=172.18.0.4
+
+2025-12-21 12:05:23,208 INFO [PUSH-SUCC] 182ms, all delay time 782ms, SLA 783ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=1}, originalSize=1, DataSize=1, target=172.18.0.4
+
+2025-12-21 12:09:22,451 INFO [PUSH-SUCC] 247ms, all delay time 802ms, SLA 813ms, Service{namespace='dev', group='DEFAULT_GROUP', name='product-service', ephemeral=true, revision=2}, originalSize=0, DataSize=0, target=172.18.0.4
+
