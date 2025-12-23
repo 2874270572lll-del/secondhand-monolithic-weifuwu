@@ -1,13 +1,13 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
 
 spring:
   application:
     name: product-service
   datasource:
-    url: jdbc:mysql://localhost:3306/product_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: lilili2004
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/product_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:lilili2004}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -23,9 +23,27 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: secondhand-nacos:8848
-        namespace: dev
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:localhost:8848}
+        namespace: ${SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE:dev}
         group: DEFAULT_GROUP
+
+    # OpenFeign配置
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 20000
+      # 启用Sentinel支持
+      sentinel:
+        enabled: true
+
+    # Sentinel配置
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8720
+      eager: true
 
 logging:
   level:

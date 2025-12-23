@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@FeignClient(name = "order-service")
+@FeignClient(name = "order-service", fallback = OrderClientFallback.class)
 public interface OrderClient {
 
     @GetMapping("/orders/{id}")

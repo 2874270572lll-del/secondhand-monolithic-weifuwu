@@ -32,6 +32,16 @@ spring:
           default:
             connect-timeout: 5000
             read-timeout: 5000
+      # 启用Sentinel支持
+      sentinel:
+        enabled: true
+
+    # Sentinel配置
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8722
+      eager: true
 
 logging:
   level:

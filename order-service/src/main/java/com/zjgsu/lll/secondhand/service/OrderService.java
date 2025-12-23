@@ -58,6 +58,10 @@ public class OrderService {
         // 调用商品服务获取商品详情
         Result<?> productResult = productClient.getProductById(order.getProductId());
 
+        if (productResult.getCode() == 503) {
+            throw new BusinessException("商品服务暂时不可用,请稍后重试");
+        }
+
         if (productResult.getCode() != 200 || productResult.getData() == null) {
             throw new BusinessException("Product not found");
         }

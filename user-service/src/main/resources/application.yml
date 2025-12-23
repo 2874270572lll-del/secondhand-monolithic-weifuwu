@@ -28,6 +28,24 @@ spring:
         namespace: dev
         group: DEFAULT_GROUP
 
+    # OpenFeign配置
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 20000
+      # 启用Sentinel支持
+      sentinel:
+        enabled: true
+
+    # Sentinel配置
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+      eager: true
+
 server:
   port: 8081
 

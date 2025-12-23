@@ -32,7 +32,14 @@ spring:
           default:
             connect-timeout: 10000
             read-timeout: 20000
+      # 关键：启用 Spring Cloud Circuit Breaker
+      circuitbreaker:
+        enabled: true
+        # 对所有异常都触发降级
+        alphanumeric-ids:
+          enabled: true
 
 logging:
   level:
     com.zjgsu.lll.secondhand: debug
+    feign: debug

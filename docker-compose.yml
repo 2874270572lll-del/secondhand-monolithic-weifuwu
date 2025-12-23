@@ -94,15 +94,61 @@ services:
       - secondhand-net
     restart: always
 
-  # 商品服务
-  product-service:
+  # 商品服务 - 实例1
+  product-service-1:
     build:
       context: ./product-service
       dockerfile: Dockerfile
-    container_name: product-service
-    ports:
-      - "8082:8082"
+    container_name: product-service-1
     environment:
+      - SERVER_PORT=8082
+      - INSTANCE_ID=product-service-1
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/product_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=lilili2004
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=dev
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+    networks:
+      - secondhand-net
+    restart: always
+
+  # 商品服务 - 实例2
+  product-service-2:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service-2
+    environment:
+      - SERVER_PORT=8082
+      - INSTANCE_ID=product-service-2
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/product_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=lilili2004
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=dev
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+    networks:
+      - secondhand-net
+    restart: always
+
+  # 商品服务 - 实例3
+  product-service-3:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service-3
+    environment:
+      - SERVER_PORT=8082
+      - INSTANCE_ID=product-service-3
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/product_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=lilili2004

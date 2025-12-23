@@ -17,9 +17,13 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(BusinessException.class)
-    public Result<?> handleBusinessException(BusinessException e) {
-        log.error("Business exception: {}", e.getMessage());
-        return Result.error(e.getCode(), e.getMessage());
+    public Result<Void> handleBusinessException(BusinessException e) {
+        // 服务降级返回 503
+        if (e.getMessage() != null && e.getMessage().contains("暂时不可用")) {
+            return Result.error(503, e.getMessage());
+        }
+        // 其他业务异常返回 400
+        return Result.error(400, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

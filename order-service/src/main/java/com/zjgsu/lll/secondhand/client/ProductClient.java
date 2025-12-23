@@ -1,6 +1,7 @@
 package com.zjgsu.lll.secondhand.client;
 
 import com.zjgsu.lll.secondhand.common.Result;
+import com.zjgsu.lll.secondhand.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,9 +9,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import java.math.BigDecimal;
 
-@FeignClient(name = "product-service")
+@FeignClient(
+        name = "product-service",
+        fallbackFactory = ProductClientFallbackFactory.class,
+        configuration = FeignConfig.class  // 添加这行
+)
 public interface ProductClient {
-
     @GetMapping("/products/{id}")
     Result<ProductDTO> getProductById(@PathVariable("id") Long id);
 
@@ -29,6 +33,7 @@ class ProductDTO {
     public ProductDTO() {
     }
 
+    // getters and setters...
     public Long getId() {
         return id;
     }

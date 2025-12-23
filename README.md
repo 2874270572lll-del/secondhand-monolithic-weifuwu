@@ -1,282 +1,367 @@
-# 二手交易平台微服务架构
+# 二手交易平台 - 微服务架构（阶段3）
 
-本项目是从单体应用（secondhand-monolithic）拆分而来的微服务架构实现。
+## 项目概述
+
+本项目是一个基于Spring Cloud Alibaba的二手交易平台微服务系统，完成了阶段3的服务间通信与负载均衡功能实现。
+
+## 技术栈
+
+- **Java**: 21
+- **Spring Boot**: 3.3.6
+- **Spring Cloud**: 2023.0.3
+- **Spring Cloud Alibaba**: 2023.0.1.2
+- **Nacos**: 2.2.3（服务注册与发现、配置中心）
+- **OpenFeign**: 服务间调用
+- **Spring Cloud LoadBalancer**: 负载均衡
+- **Sentinel**: 熔断降级
+- **MySQL**: 8.4.0（数据库）
+- **JPA/Hibernate**: 持久层框架
+
+## 项目架构
+
+### 微服务模块
+
+项目包含以下4个独立微服务：
+
+1. **user-service（用户服务）** - 端口: 8081
+   - 用户注册、登录
+   - 用户信息管理
+   - 提供用户信息查询接口供其他服务调用
+
+2. **product-service（商品服务）** - 端口: 8082
+   - 商品发布、编辑、删除
+   - 商品搜索、分类浏览
+   - 库存管理
+   - 提供商品信息查询和库存减少接口供订单服务调用
+
+3. **order-service（订单服务）** - 端口: 8083
+   - 订单创建、支付
+   - 订单状态管理（待支付、已支付、已发货、已完成、已取消）
+   - 调用商品服务获取商品信息和减少库存
+   - 调用用户服务验证用户信息
+
+4. **comment-service（评论服务）** - 端口: 8084
+   - 评论发布、查询
+   - 评分管理
+   - 调用订单服务验证订单信息
+   - 调用用户服务获取用户信息
+
+### 服务间调用关系
+
+```
+┌──────────────┐
+│ user-service │ (被调用)
+└──────────────┘
+       ↑
+       │ UserClient (Feign)
+       │
+┌──────────────┬──────────────┬────────────────┐
+│order-service │comment-service│product-service│
+└──────────────┴──────────────┴────────────────┘
+       │           ↑                    ↑
+       │           │                    │
+       │      OrderClient          ProductClient
+       │      (Feign)               (Feign)
+       │           │                    │
+       └───────────┴────────────────────┘
+```
+
+## 阶段3核心功能
+
+### 1. OpenFeign服务间调用
+
+所有服务已集成OpenFeign，实现声明式REST客户端调用：
+
+- **ProductClient**: 调用商品服务
+  - `getProductById()`: 获取商品详情
+  - `reduceStock()`: 减少商品库存
+
+- **UserClient**: 调用用户服务
+  - `getUserById()`: 获取用户信息
+
+- **OrderClient**: 调用订单服务
+  - `getOrderById()`: 获取订单详情
+
+### 2. 负载均衡
+
+使用Spring Cloud LoadBalancer实现客户端负载均衡：
+
+- 默认策略：轮询（Round Robin）
+- 支持多实例部署
+- 自动从Nacos获取服务实例列表
+- 健康检查与自动剔除故障节点
+
+### 3. 熔断降级
+
+集成Sentinel实现服务容错：
+
+- **熔断保护**: 当服务调用失败率达到阈值时自动熔断
+- **降级处理**: 每个Feign客户端都配置了Fallback降级逻辑
+- **限流控制**: 支持QPS限流
+- **实时监控**: Sentinel Dashboard可视化监控
+
+#### Fallback降级示例
+
+- ProductClientFallback: 商品服务不可用时返回友好错误信息
+- UserClientFallback: 用户服务不可用时返回友好错误信息
+- OrderClientFallback: 订单服务不可用时返回友好错误信息
+
+### 4. 配置说明
+
+每个服务的`application.yml`都配置了：
+
+```yaml
+spring:
+  cloud:
+    # OpenFeign配置
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000  # 连接超时时间
+            read-timeout: 20000     # 读取超时时间
+      sentinel:
+        enabled: true               # 启用Sentinel支持
+
+    # Sentinel配置
+    sentinel:
+      transport:
+        dashboard: localhost:8080   # Sentinel控制台地址
+        port: 871x                  # 各服务端口不同
+      eager: true                   # 立即初始化
+```
+
+## 数据库设计
+
+项目使用独立数据库架构，每个服务对应一个独立数据库：
+
+- `user_db`: 用户数据库
+- `product_db`: 商品数据库
+- `order_db`: 订单数据库
+- `comment_db`: 评论数据库
 
 ## 项目结构
 
 ```
 secondhand-microservices/
-├── pom.xml                    # 父级POM文件
-├── user-service/             # 用户服务 (端口: 8081)
-│   ├── pom.xml
-│   └── src/main/
-│       ├── java/com/zjgsu/lll/secondhand/
-│       │   ├── UserServiceApplication.java
-│       │   ├── entity/User.java
-│       │   ├── repository/UserRepository.java
-│       │   ├── service/UserService.java
-│       │   ├── controller/UserController.java
-│       │   ├── common/Result.java
-│       │   └── exception/
-│       └── resources/application.yml
-│
-├── product-service/          # 商品服务 (端口: 8082)
-│   ├── pom.xml
-│   └── src/main/
-│       ├── java/com/zjgsu/lll/secondhand/
-│       │   ├── ProductServiceApplication.java
-│       │   ├── entity/Product.java
-│       │   ├── repository/ProductRepository.java
-│       │   ├── service/ProductService.java
-│       │   ├── controller/ProductController.java
-│       │   ├── common/Result.java
-│       │   └── exception/
-│       └── resources/application.yml
-│
-├── order-service/            # 订单服务 (端口: 8083)
-│   ├── pom.xml
-│   └── src/main/
-│       ├── java/com/zjgsu/lll/secondhand/
-│       │   ├── OrderServiceApplication.java
-│       │   ├── entity/Order.java
-│       │   ├── repository/OrderRepository.java
-│       │   ├── service/OrderService.java
-│       │   ├── controller/OrderController.java
-│       │   ├── client/ProductClient.java    # Feign客户端
-│       │   ├── common/Result.java
-│       │   └── exception/
-│       └── resources/application.yml
-│
-└── comment-service/          # 评论服务 (端口: 8084)
-    ├── pom.xml
-    └── src/main/
-        ├── java/com/zjgsu/lll/secondhand/
-        │   ├── CommentServiceApplication.java
-        │   ├── entity/Comment.java
-        │   ├── repository/CommentRepository.java
-        │   ├── service/CommentService.java
-        │   ├── controller/CommentController.java
-        │   ├── client/OrderClient.java      # Feign客户端
-        │   ├── common/Result.java
-        │   └── exception/
-        └── resources/application.yml
+├── user-service/
+│   ├── src/main/java/com/zjgsu/lll/secondhand/
+│   │   ├── client/          # Feign客户端
+│   │   │   ├── UserClient.java
+│   │   │   └── UserClientFallback.java
+│   │   ├── config/          # 配置类
+│   │   │   └── LoadBalancerConfig.java
+│   │   ├── controller/      # 控制器
+│   │   ├── service/         # 业务逻辑
+│   │   ├── entity/          # 实体类
+│   │   ├── repository/      # 数据访问
+│   │   └── common/          # 公共类（Result等）
+│   └── src/main/resources/
+│       └── application.yml
+├── product-service/
+│   └── (结构同上)
+├── order-service/
+│   └── (结构同上)
+├── comment-service/
+│   └── (结构同上)
+└── pom.xml
 ```
 
-## 微服务说明
+## 前置环境要求
 
-### 1. user-service (用户服务)
-- **端口**: 8081
-- **数据库**: user_db
-- **功能**:
-  - 用户注册、登录
-  - 用户信息管理
-  - 用户状态管理
+1. **JDK 21**
+2. **Maven 3.6+**
+3. **MySQL 8.0+**
+4. **Nacos 2.2.3**
+5. **Sentinel Dashboard 1.8+**（可选，用于监控）
 
-### 2. product-service (商品服务)
-- **端口**: 8082
-- **数据库**: product_db
-- **功能**:
-  - 商品发布、编辑、删除
-  - 商品查询（按状态、分类、卖家、关键词）
-  - 库存管理
-  - 商品状态管理
+## 快速开始
 
-### 3. order-service (订单服务)
-- **端口**: 8083
-- **数据库**: order_db
-- **功能**:
-  - 订单创建
-  - 订单支付、发货、完成、取消
-  - 订单查询（按买家、卖家、状态）
-  - **服务调用**: 通过Feign调用product-service获取商品信息和减库存
+详细的环境配置和启动步骤请参考 `启动指南.md` 文件。
 
-### 4. comment-service (评论服务)
-- **端口**: 8084
-- **数据库**: comment_db
-- **功能**:
-  - 评论创建、删除
-  - 评论查询（按商品、用户、订单）
-  - 评分管理（1-5星）
-  - **服务调用**: 通过Feign调用order-service验证订单
+## API接口文档
 
-## 技术栈
+### 用户服务 (user-service:8081)
 
-- **Spring Boot**: 3.3.6
-- **Spring Cloud**: 2023.0.3
-- **Spring Cloud Alibaba**: 2023.0.1.2
-- **Nacos**: 服务注册与发现
-- **OpenFeign**: 服务间调用
-- **Spring Data JPA**: 数据持久化
-- **MySQL**: 8.4.0
-- **Java**: 25
-
-## 环境准备
-
-### 1. 安装Nacos
-下载并启动Nacos服务器：
-```bash
-# Windows
-cd nacos/bin
-startup.cmd -m standalone
-
-# Linux/Mac
-cd nacos/bin
-sh startup.sh -m standalone
-```
-访问: http://localhost:8848/nacos (用户名/密码: nacos/nacos)
-
-### 2. 创建数据库
-在MySQL中创建4个数据库：
-```sql
-CREATE DATABASE user_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE product_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE order_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE comment_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### 3. 修改数据库配置
-如果MySQL密码不是 `lilili2004`，需要修改各服务的 `application.yml` 文件中的数据库密码。
-
-## 启动服务
-
-### 方式1: 使用Maven命令
-```bash
-# 在项目根目录编译所有服务
-mvn clean install
-
-# 启动各个服务
-cd user-service
-mvn spring-boot:run
-
-cd product-service
-mvn spring-boot:run
-
-cd order-service
-mvn spring-boot:run
-
-cd comment-service
-mvn spring-boot:run
-```
-
-### 方式2: 使用IDE
-在IDEA中分别启动各服务的Application类：
-- UserServiceApplication
-- ProductServiceApplication
-- OrderServiceApplication
-- CommentServiceApplication
-
-## 服务启动顺序建议
-
-1. 确保Nacos已启动
-2. 启动user-service (8081)
-3. 启动product-service (8082)
-4. 启动order-service (8083) - 依赖product-service
-5. 启动comment-service (8084) - 依赖order-service
-
-## API接口说明
-
-### User Service (8081)
-- `POST /users` - 创建用户
 - `GET /users` - 获取所有用户
 - `GET /users/{id}` - 根据ID获取用户
 - `GET /users/username/{username}` - 根据用户名获取用户
+- `POST /users` - 创建用户
 - `PUT /users/{id}` - 更新用户
 - `DELETE /users/{id}` - 删除用户
 - `POST /users/login` - 用户登录
 
-### Product Service (8082)
-- `POST /products` - 创建商品
+### 商品服务 (product-service:8082)
+
 - `GET /products` - 获取所有商品
 - `GET /products/{id}` - 根据ID获取商品
 - `GET /products/status/{status}` - 根据状态获取商品
-- `GET /products/seller/{sellerId}` - 根据卖家获取商品
+- `GET /products/seller/{sellerId}` - 根据卖家ID获取商品
 - `GET /products/category/{category}` - 根据分类获取商品
-- `GET /products/search?keyword=xxx` - 搜索商品
+- `GET /products/search?keyword={keyword}` - 搜索商品
+- `POST /products` - 创建商品
 - `PUT /products/{id}` - 更新商品
 - `DELETE /products/{id}` - 删除商品
 - `PUT /products/{id}/status/{status}` - 更新商品状态
 - `PUT /products/{id}/reduce-stock/{quantity}` - 减少库存
 
-### Order Service (8083)
-- `POST /orders` - 创建订单
+### 订单服务 (order-service:8083)
+
 - `GET /orders` - 获取所有订单
 - `GET /orders/{id}` - 根据ID获取订单
 - `GET /orders/orderNo/{orderNo}` - 根据订单号获取订单
-- `GET /orders/buyer/{buyerId}` - 根据买家获取订单
-- `GET /orders/seller/{sellerId}` - 根据卖家获取订单
+- `GET /orders/buyer/{buyerId}` - 根据买家ID获取订单
+- `GET /orders/seller/{sellerId}` - 根据卖家ID获取订单
 - `GET /orders/status/{status}` - 根据状态获取订单
+- `POST /orders` - 创建订单
 - `PUT /orders/{id}/pay` - 支付订单
 - `PUT /orders/{id}/ship` - 发货
 - `PUT /orders/{id}/finish` - 完成订单
 - `DELETE /orders/{id}` - 取消订单
 
-### Comment Service (8084)
-- `POST /comments` - 创建评论
+### 评论服务 (comment-service:8084)
+
 - `GET /comments` - 获取所有评论
 - `GET /comments/{id}` - 根据ID获取评论
-- `GET /comments/product/{productId}` - 根据商品获取评论
-- `GET /comments/user/{userId}` - 根据用户获取评论
-- `GET /comments/order/{orderId}` - 根据订单获取评论
+- `GET /comments/product/{productId}` - 根据商品ID获取评论
+- `GET /comments/user/{userId}` - 根据用户ID获取评论
+- `GET /comments/order/{orderId}` - 根据订单ID获取评论
+- `POST /comments` - 创建评论
 - `DELETE /comments/{id}` - 删除评论
 
-## 服务间调用关系
+## 测试服务间调用
 
+### 测试场景1：创建订单（调用商品服务）
+
+```bash
+# 1. 先创建一个商品
+curl -X POST http://localhost:8082/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "二手MacBook Pro",
+    "description": "2020款，95成新",
+    "price": 8888.00,
+    "category": "电子产品",
+    "sellerId": 1,
+    "stock": 1
+  }'
+
+# 2. 创建订单（会调用商品服务获取商品信息）
+curl -X POST http://localhost:8083/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 2,
+    "productId": 1,
+    "totalPrice": 8888.00,
+    "shippingAddress": "浙江省杭州市某某街道",
+    "contactPhone": "13800138000"
+  }'
 ```
-┌─────────────────┐
-│  user-service   │ (独立服务)
-└─────────────────┘
 
-┌─────────────────┐
-│ product-service │ (独立服务)
-└─────────────────┘
-         ↑
-         │ Feign调用
-         │
-┌─────────────────┐
-│  order-service  │ (调用product-service)
-└─────────────────┘
-         ↑
-         │ Feign调用
-         │
-┌─────────────────┐
-│ comment-service │ (调用order-service)
-└─────────────────┘
+### 测试场景2：支付订单（调用商品服务减少库存）
+
+```bash
+# 支付订单（会调用商品服务减少库存）
+curl -X PUT http://localhost:8083/orders/1/pay
 ```
 
-## 配置说明
+### 测试场景3：创建评论（调用订单服务验证）
 
-每个服务的 `application.yml` 配置项：
-- `server.port`: 服务端口
-- `spring.application.name`: 服务名称（用于Nacos注册）
-- `spring.datasource`: 数据库连接配置
-- `spring.cloud.nacos.discovery`: Nacos配置
-- `spring.cloud.openfeign`: Feign客户端配置（order-service和comment-service）
+```bash
+# 创建评论（会调用订单服务验证订单）
+curl -X POST http://localhost:8084/comments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": 1,
+    "userId": 2,
+    "productId": 1,
+    "rating": 5,
+    "content": "商品很好，卖家服务态度也很棒！"
+  }'
+```
 
-## 注意事项
+### 测试熔断降级
 
-1. **数据库密码**: 默认密码为 `lilili2004`，请根据实际情况修改
-2. **Java版本**: 项目使用Java 25，确保环境匹配
-3. **Nacos**: 必须先启动Nacos，否则服务无法注册
-4. **服务依赖**: order-service依赖product-service，comment-service依赖order-service
-5. **数据一致性**: 目前未实现分布式事务，需要注意数据一致性问题
+```bash
+# 1. 停止product-service服务
 
-## 监控和管理
+# 2. 尝试创建订单，会触发降级逻辑
+curl -X POST http://localhost:8083/orders \
+  -H "Content-Type: application/json" \
+  -d '{...}'
 
-访问Nacos控制台查看服务注册情况：
-- URL: http://localhost:8848/nacos
-- 用户名: nacos
-- 密码: nacos
+# 预期返回：
+# {
+#   "code": 500,
+#   "message": "商品服务暂时不可用，请稍后重试",
+#   "data": null
+# }
+```
 
-在"服务管理" -> "服务列表"中可以看到所有注册的微服务。
+## 负载均衡测试
 
-## 后续优化建议
+1. 启动同一服务的多个实例（修改端口）
+2. 观察Nacos控制台，确认多个实例已注册
+3. 多次调用服务接口
+4. 查看日志，确认请求被分发到不同实例（轮询策略）
 
-1. **网关**: 添加Spring Cloud Gateway统一入口
-2. **配置中心**: 使用Nacos Config管理配置
-3. **分布式事务**: 使用Seata处理分布式事务
-4. **限流降级**: 使用Sentinel实现流量控制
-5. **链路追踪**: 使用Sleuth + Zipkin实现链路追踪
-6. **消息队列**: 使用RocketMQ解耦服务
-7. **缓存**: 添加Redis缓存热点数据
-8. **Docker**: 容器化部署
-9. **Kubernetes**: 编排和管理容器
+## 监控
+
+### Nacos控制台
+
+- 访问: http://localhost:8848/nacos
+- 用户名/密码: nacos/nacos
+- 功能: 查看服务注册情况、实例健康状态
+
+### Sentinel控制台（可选）
+
+- 访问: http://localhost:8080
+- 用户名/密码: sentinel/sentinel
+- 功能: 实时监控、流控规则、熔断规则
+
+## 常见问题
+
+### 1. Feign调用超时
+
+解决方案：调整`application.yml`中的超时配置
+```yaml
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 20000
+```
+
+### 2. 熔断器未生效
+
+确认以下配置：
+- Sentinel依赖已添加
+- `spring.cloud.openfeign.sentinel.enabled=true`
+- Fallback类已注册为Bean（@Component）
+
+### 3. 服务调用失败
+
+检查：
+- 目标服务是否在Nacos中注册成功
+- 服务名称是否正确（与application.name一致）
+- 网络连接是否正常
+
+## 项目亮点
+
+1. **微服务架构**: 采用Spring Cloud Alibaba生态，实现服务拆分和独立部署
+2. **服务间通信**: 使用OpenFeign实现声明式服务调用，代码简洁优雅
+3. **负载均衡**: 集成LoadBalancer实现客户端负载均衡，提高系统可用性
+4. **熔断降级**: Sentinel熔断保护，保证系统稳定性
+5. **服务治理**: Nacos统一管理服务注册发现
+6. **独立数据库**: 每个服务独立数据库，符合微服务最佳实践
+
+## 后续规划
+
+- 阶段4: 网关与统一认证
+- 阶段5: 分布式事务
+- 阶段6: 链路追踪与监控
+- 阶段7: 容器化部署（Docker + Kubernetes）
+
