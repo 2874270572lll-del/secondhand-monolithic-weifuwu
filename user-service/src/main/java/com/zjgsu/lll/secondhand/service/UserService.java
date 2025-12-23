@@ -3,6 +3,7 @@ package com.zjgsu.lll.secondhand.service;
 import com.zjgsu.lll.secondhand.entity.User;
 import com.zjgsu.lll.secondhand.exception.BusinessException;
 import com.zjgsu.lll.secondhand.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +13,11 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -39,6 +42,9 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new BusinessException("Email already exists");
         }
+
+        // ✅ 加密密码
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -60,8 +66,9 @@ public class UserService {
         existingUser.setPhone(user.getPhone());
         existingUser.setAddress(user.getAddress());
 
+        // ✅ 如果修改密码，加密后保存
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            existingUser.setPassword(user.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
         return userRepository.save(existingUser);
@@ -75,18 +82,44 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public User login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException("Invalid username or password"));
+    /**
+     * ✅ 用户认证（登录验证）- 使用加密密码比对
+     */
+    public User authenticate(String username, String password) {
+        User user = userRepository.findByUsername(username).orElse(null);
 
-        if (!user.getPassword().equals(password)) {
-            throw new BusinessException("Invalid username or password");
+        if (user == null) {
+            return null;
+        }
+
+        // ✅ 使用 BCrypt 验证密码
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return null;
         }
 
         if (user.getStatus() == 0) {
-            throw new BusinessException("Account is disabled");
+            return null; // 账户被禁用
         }
 
         return user;
+    }
+
+    /**
+     * ✅ 保存用户（用于注册）- 加密密码
+     */
+    @Transactional
+    public User save(User user) {
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new BusinessException("用户名已存在");
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new BusinessException("邮箱已被注册");
+        }
+
+        // ✅ 加密密码
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setStatus(1); // 默认启用
+
+        return userRepository.save(user);
     }
 }

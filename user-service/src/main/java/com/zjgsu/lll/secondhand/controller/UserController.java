@@ -50,10 +50,10 @@ public class UserController {
         return Result.success();
     }
 
-    @PostMapping("/login")
-    public Result<User> login(@RequestBody Map<String, String> loginRequest) {
-        String username = loginRequest.get("username");
-        String password = loginRequest.get("password");
-        return Result.success(userService.login(username, password));
-    }
+//    @PostMapping("/login")
+//    public Result<User> login(@RequestBody Map<String, String> loginRequest) {
+////        String username = loginRequest.get("username");
+////        String password = loginRequest.get("password");
+////        return Result.success(userService.login(username, password));
+//    }
 }

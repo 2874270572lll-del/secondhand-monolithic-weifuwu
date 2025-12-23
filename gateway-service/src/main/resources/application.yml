@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: secondhand-nacos:8848
+        namespace: dev
+        group: DEFAULT_GROUP
+
+    gateway:
+      # 启用服务发现路由
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      # 路由配置
+      routes:
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+
+        # 商品服务路由
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/product/**
+          filters:
+            - StripPrefix=1
+
+        # 订单服务路由
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+          filters:
+            - StripPrefix=1
+
+        # 评论服务路由
+        - id: comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/comment/**
+          filters:
+            - StripPrefix=1
+
+        # 认证服务路由（白名单，不需要JWT验证）
+        - id: auth-service
+          uri: lb://user-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=0
+
+      # 全局CORS配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+server:
+  port: 8080
+
+# JWT配置
+jwt:
+  secret: aHR0cHM6Ly9naXRodWIuY29tL2Nsb3VkLWFjYWRlbXktc2Vjb25kaGFuZC1wbGF0Zm9ybS0yMDI0LXNlY3VyZS1qd3Qtc2VjcmV0LWtleQ==
+  expiration: 86400000  # 24小时（毫秒）
+
+# 白名单配置（不需要JWT验证的路径）
+auth:
+  whitelist: /auth/**,/actuator/**,/user/register,/user/login
+
+logging:
+  level:
+    com.zjgsu.lll.secondhand: debug
+    org.springframework.cloud.gateway: debug

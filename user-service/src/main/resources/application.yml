@@ -49,6 +49,11 @@ spring:
 server:
   port: 8081
 
+# JWT配置
+jwt:
+  secret: aHR0cHM6Ly9naXRodWIuY29tL2Nsb3VkLWFjYWRlbXktc2Vjb25kaGFuZC1wbGF0Zm9ybS0yMDI0LXNlY3VyZS1qd3Qtc2VjcmV0LWtleQ==
+  expiration: 86400000  # 24小时（毫秒）
+
 logging:
   level:
     com.secondhand: debug

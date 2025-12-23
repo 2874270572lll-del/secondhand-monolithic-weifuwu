@@ -209,6 +209,24 @@ services:
       - secondhand-net
     restart: always
 
+  # API网关
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=dev
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - secondhand-net
+    restart: always
+
 networks:
   secondhand-net:
     driver: bridge
