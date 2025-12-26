@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: user-service
+
+  cloud:
+    nacos:
+      # Nacos服务地址
+      server-addr: secondhand-nacos:8848
+
+      # 配置中心
+      config:
+        # 配置文件格式
+        file-extension: yaml
+        # 命名空间（环境隔离）
+        namespace: dev
+        # 分组
+        group: DEFAULT_GROUP
+        # 启用配置刷新
+        refresh-enabled: true
+        # 共享配置（可选）
+        shared-configs:
+          - data-id: common-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+
+      # 服务发现配置
+      discovery:
+        server-addr: secondhand-nacos:8848
+        namespace: dev
+        group: DEFAULT_GROUP
+
+  profiles:
+    active: dev

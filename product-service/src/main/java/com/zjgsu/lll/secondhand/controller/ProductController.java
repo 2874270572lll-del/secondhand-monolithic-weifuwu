@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/product")
 public class ProductController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);

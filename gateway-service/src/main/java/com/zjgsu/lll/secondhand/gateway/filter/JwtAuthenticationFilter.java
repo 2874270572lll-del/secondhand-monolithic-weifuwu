@@ -1,5 +1,6 @@
 package com.zjgsu.lll.secondhand.gateway.filter;
 
+import com.zjgsu.lll.secondhand.gateway.config.JwtProperties;
 import com.zjgsu.lll.secondhand.gateway.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 
 /**
@@ -30,13 +31,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private JwtProperties jwtProperties;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    // 白名单路径（不需要JWT验证）
-    private final List<String> whitelist = Arrays.asList(
-            "/auth/**",
-            "/actuator/**"
-    );
+    @PostConstruct
+    public void init() {
+        log.info("=== JwtAuthenticationFilter initialized ===");
+        log.info("JWT whitelist paths: {}", jwtProperties.getWhitelist());
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -63,32 +67,39 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String token = authHeader.substring(7);
 
         // 验证token
-        if (!jwtUtil.validateToken(token)) {
-            log.warn("Invalid JWT token for path: {}", path);
+        try {
+            if (!jwtUtil.validateToken(token)) {
+                log.warn("Invalid JWT token for path: {}", path);
+                return unauthorized(exchange);
+            }
+
+            // 从token中提取用户名
+            String username = jwtUtil.getUsernameFromToken(token);
+            if (username == null) {
+                log.warn("Failed to extract username from token for path: {}", path);
+                return unauthorized(exchange);
+            }
+
+            log.info("JWT verification successful for user: {}", username);
+
+            // 将用户信息添加到请求头,传递给下游服务
+            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                    .header("X-User-Name", username)
+                    .build();
+
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+
+        } catch (Exception e) {
+            log.error("JWT validation error: {}", e.getMessage());
             return unauthorized(exchange);
         }
-
-        // 从token中提取用户名
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (username == null) {
-            log.warn("Failed to extract username from token for path: {}", path);
-            return unauthorized(exchange);
-        }
-
-        log.info("JWT verification successful for user: {}", username);
-
-        // 将用户信息添加到请求头,传递给下游服务
-        ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                .header("X-User-Name", username)
-                .build();
-
-        return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
 
     /**
      * 检查路径是否在白名单中
      */
     private boolean isWhitelisted(String path) {
+        List<String> whitelist = jwtProperties.getWhitelist();
         boolean result = whitelist.stream()
                 .anyMatch(pattern -> pathMatcher.match(pattern, path));
 

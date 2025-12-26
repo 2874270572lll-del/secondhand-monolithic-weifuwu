@@ -1,367 +1,408 @@
-# 二手交易平台 - 微服务架构（阶段3）
+# 二手交易平台 - 阶段5：配置中心
 
 ## 项目概述
 
-本项目是一个基于Spring Cloud Alibaba的二手交易平台微服务系统，完成了阶段3的服务间通信与负载均衡功能实现。
+本项目是基于Spring Cloud Alibaba的微服务二手交易平台，已完成**阶段5：配置中心**的实现。
 
-## 技术栈
+**阶段5目标**：
+- ✅ 使用Nacos Config实现配置集中管理
+- ✅ 配置从Nacos动态读取
+- ✅ 支持配置动态刷新（无需重启服务）
+- ✅ 实现多环境配置隔离（dev/test/prod）
 
-- **Java**: 21
+## 技术架构
+
+### 核心技术栈
 - **Spring Boot**: 3.3.6
 - **Spring Cloud**: 2023.0.3
 - **Spring Cloud Alibaba**: 2023.0.1.2
-- **Nacos**: 2.2.3（服务注册与发现、配置中心）
-- **OpenFeign**: 服务间调用
-- **Spring Cloud LoadBalancer**: 负载均衡
-- **Sentinel**: 熔断降级
-- **MySQL**: 8.4.0（数据库）
-- **JPA/Hibernate**: 持久层框架
+- **Nacos Server**: v3.1.0（服务注册与配置中心）
+- **MySQL**: 8.4
+- **Java**: 21
 
-## 项目架构
+### 微服务列表
+1. **user-service** (8081) - 用户服务
+2. **product-service** (8082) - 商品服务
+3. **order-service** (8083) - 订单服务
+4. **comment-service** (8084) - 评论服务
+5. **gateway-service** (8080) - API网关
 
-### 微服务模块
+## 阶段5新增功能
 
-项目包含以下4个独立微服务：
+### 1. Nacos Config集成
+- 所有微服务集成Nacos Config
+- 添加`spring-cloud-starter-alibaba-nacos-config`依赖
+- 创建`bootstrap.yml`配置文件
+- 配置优先级：Nacos Config > Bootstrap > Application
 
-1. **user-service（用户服务）** - 端口: 8081
-   - 用户注册、登录
-   - 用户信息管理
-   - 提供用户信息查询接口供其他服务调用
-
-2. **product-service（商品服务）** - 端口: 8082
-   - 商品发布、编辑、删除
-   - 商品搜索、分类浏览
-   - 库存管理
-   - 提供商品信息查询和库存减少接口供订单服务调用
-
-3. **order-service（订单服务）** - 端口: 8083
-   - 订单创建、支付
-   - 订单状态管理（待支付、已支付、已发货、已完成、已取消）
-   - 调用商品服务获取商品信息和减少库存
-   - 调用用户服务验证用户信息
-
-4. **comment-service（评论服务）** - 端口: 8084
-   - 评论发布、查询
-   - 评分管理
-   - 调用订单服务验证订单信息
-   - 调用用户服务获取用户信息
-
-### 服务间调用关系
-
+### 2. 配置文件结构
 ```
-┌──────────────┐
-│ user-service │ (被调用)
-└──────────────┘
-       ↑
-       │ UserClient (Feign)
-       │
-┌──────────────┬──────────────┬────────────────┐
-│order-service │comment-service│product-service│
-└──────────────┴──────────────┴────────────────┘
-       │           ↑                    ↑
-       │           │                    │
-       │      OrderClient          ProductClient
-       │      (Feign)               (Feign)
-       │           │                    │
-       └───────────┴────────────────────┘
+nacos-configs/
+├── common-config.yaml          # 通用配置（所有服务共享）
+├── user-service-dev.yaml       # 用户服务配置
+├── product-service-dev.yaml    # 商品服务配置
+├── order-service-dev.yaml      # 订单服务配置
+├── comment-service-dev.yaml    # 评论服务配置
+└── gateway-service-dev.yaml    # 网关服务配置
 ```
 
-## 阶段3核心功能
+### 3. 动态刷新功能
+- 使用`@RefreshScope`注解支持配置动态刷新
+- 在Nacos控制台修改配置后自动推送到服务
+- 无需重启服务即可生效
 
-### 1. OpenFeign服务间调用
+### 4. 多环境支持
+- **dev**: 开发环境
+- **test**: 测试环境
+- **prod**: 生产环境
+- 通过namespace实现环境隔离
 
-所有服务已集成OpenFeign，实现声明式REST客户端调用：
+## 快速开始
 
-- **ProductClient**: 调用商品服务
-  - `getProductById()`: 获取商品详情
-  - `reduceStock()`: 减少商品库存
+### 前置要求
+- JDK 21
+- Maven 3.8+
+- Docker 和 Docker Compose（可选，用于容器化部署）
+- MySQL 8.4
 
-- **UserClient**: 调用用户服务
-  - `getUserById()`: 获取用户信息
+### 步骤1：启动基础设施
 
-- **OrderClient**: 调用订单服务
-  - `getOrderById()`: 获取订单详情
+#### 方式1：使用Docker Compose（推荐）
+```bash
+# 启动Nacos和MySQL
+docker-compose up -d secondhand-mysql secondhand-nacos
 
-### 2. 负载均衡
+# 查看服务状态
+docker-compose ps
 
-使用Spring Cloud LoadBalancer实现客户端负载均衡：
-
-- 默认策略：轮询（Round Robin）
-- 支持多实例部署
-- 自动从Nacos获取服务实例列表
-- 健康检查与自动剔除故障节点
-
-### 3. 熔断降级
-
-集成Sentinel实现服务容错：
-
-- **熔断保护**: 当服务调用失败率达到阈值时自动熔断
-- **降级处理**: 每个Feign客户端都配置了Fallback降级逻辑
-- **限流控制**: 支持QPS限流
-- **实时监控**: Sentinel Dashboard可视化监控
-
-#### Fallback降级示例
-
-- ProductClientFallback: 商品服务不可用时返回友好错误信息
-- UserClientFallback: 用户服务不可用时返回友好错误信息
-- OrderClientFallback: 订单服务不可用时返回友好错误信息
-
-### 4. 配置说明
-
-每个服务的`application.yml`都配置了：
-
-```yaml
-spring:
-  cloud:
-    # OpenFeign配置
-    openfeign:
-      client:
-        config:
-          default:
-            connect-timeout: 10000  # 连接超时时间
-            read-timeout: 20000     # 读取超时时间
-      sentinel:
-        enabled: true               # 启用Sentinel支持
-
-    # Sentinel配置
-    sentinel:
-      transport:
-        dashboard: localhost:8080   # Sentinel控制台地址
-        port: 871x                  # 各服务端口不同
-      eager: true                   # 立即初始化
+# 等待Nacos启动完成（约30秒）
+docker-compose logs -f secondhand-nacos
 ```
 
-## 数据库设计
+#### 方式2：本地安装
+参考[启动指南-阶段4.md](启动指南-阶段4.md)中的说明
 
-项目使用独立数据库架构，每个服务对应一个独立数据库：
+### 步骤2：配置Nacos Config
 
-- `user_db`: 用户数据库
-- `product_db`: 商品数据库
-- `order_db`: 订单数据库
-- `comment_db`: 评论数据库
+#### 2.1 访问Nacos控制台
+- URL: http://localhost:8848/nacos
+- 默认账号: nacos
+- 默认密码: nacos
+
+#### 2.2 创建命名空间
+1. 进入"命名空间"菜单
+2. 点击"新建命名空间"
+3. 命名空间ID: `dev`
+4. 命名空间名: `开发环境`
+5. 点击"确定"
+
+#### 2.3 导入配置文件
+在"配置管理" -> "配置列表"中，选择`dev`命名空间，依次创建以下配置：
+
+| Data ID | Group | 格式 | 配置文件 |
+|---------|-------|------|----------|
+| common-config.yaml | DEFAULT_GROUP | YAML | nacos-configs/common-config.yaml |
+| user-service-dev.yaml | DEFAULT_GROUP | YAML | nacos-configs/user-service-dev.yaml |
+| product-service-dev.yaml | DEFAULT_GROUP | YAML | nacos-configs/product-service-dev.yaml |
+| order-service-dev.yaml | DEFAULT_GROUP | YAML | nacos-configs/order-service-dev.yaml |
+| comment-service-dev.yaml | DEFAULT_GROUP | YAML | nacos-configs/comment-service-dev.yaml |
+| gateway-service-dev.yaml | DEFAULT_GROUP | YAML | nacos-configs/gateway-service-dev.yaml |
+
+**创建配置步骤**：
+1. 点击"+"按钮
+2. 填写Data ID（如：`user-service-dev.yaml`）
+3. 选择Group：`DEFAULT_GROUP`
+4. 选择配置格式：`YAML`
+5. 复制`nacos-configs`目录中对应文件的内容到配置内容框
+6. 点击"发布"
+
+### 步骤3：编译项目
+```bash
+# 编译所有服务
+mvn clean package -DskipTests
+
+# 或者编译单个服务
+cd user-service
+mvn clean package -DskipTests
+```
+
+### 步骤4：启动微服务
+
+#### 方式1：使用Docker Compose启动所有服务
+```bash
+# 启动所有微服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f user-service
+```
+
+#### 方式2：使用Java命令启动
+```bash
+# 启动用户服务
+java -jar user-service/target/user-service-1.0.0.jar
+
+# 启动商品服务
+java -jar product-service/target/product-service-1.0.0.jar
+
+# 启动订单服务
+java -jar order-service/target/order-service-1.0.0.jar
+
+# 启动评论服务
+java -jar comment-service/target/comment-service-1.0.0.jar
+
+# 启动网关服务
+java -jar gateway-service/target/gateway-service-1.0.0.jar
+```
+
+### 步骤5：验证配置中心功能
+
+#### 5.1 检查服务注册
+访问 Nacos 控制台的"服务管理" -> "服务列表"，确认所有服务已注册。
+
+#### 5.2 测试配置读取
+```bash
+# 测试配置读取接口
+curl http://localhost:8081/api/config/current
+```
+
+响应示例：
+```json
+{
+  "featureEnabled": true,
+  "maxPageSize": 50,
+  "welcomeMessage": "欢迎使用二手交易平台 - 配置中心版",
+  "jwtExpiration": 86400000,
+  "jwtExpirationHours": 24,
+  "message": "配置从Nacos Config动态读取",
+  "refreshHint": "在Nacos控制台修改配置后，此接口将返回最新值（无需重启服务）"
+}
+```
+
+#### 5.3 测试动态刷新
+
+**步骤**：
+1. 记录当前配置值：
+   ```bash
+   curl http://localhost:8081/api/config/current
+   ```
+
+2. 在Nacos控制台修改配置：
+   - 进入"配置管理" -> "配置列表"
+   - 找到`common-config.yaml`
+   - 点击"编辑"
+   - 修改`business.welcome-message`的值
+   - 点击"发布"
+
+3. 等待3-5秒后再次访问：
+   ```bash
+   curl http://localhost:8081/api/config/current
+   ```
+
+4. 观察`welcomeMessage`字段的值已更新（**无需重启服务**）
+
+## 配置说明
+
+### 配置优先级
+1. **Nacos Config** (最高优先级)
+2. **bootstrap.yml**
+3. **application.yml** (最低优先级)
+
+### 配置加载流程
+1. 服务启动时，首先加载`bootstrap.yml`
+2. 根据`bootstrap.yml`中的配置连接到Nacos
+3. 从Nacos加载配置：
+   - 共享配置：`common-config.yaml`
+   - 服务特定配置：`{service-name}-{profile}.yaml`
+4. 合并本地`application.yml`配置
+
+### 动态刷新机制
+- 标记`@RefreshScope`的Bean支持动态刷新
+- Nacos推送配置变更通知
+- Spring Cloud自动刷新Bean
+- 新的请求使用最新配置
+
+## API测试
+
+### 1. 配置查询接口
+```bash
+# 获取当前配置
+curl http://localhost:8081/api/config/current
+
+# 获取功能开关状态
+curl http://localhost:8081/api/config/feature-status
+
+# 获取欢迎消息
+curl http://localhost:8081/api/config/welcome
+```
+
+### 2. 用户服务接口
+```bash
+# 用户注册
+curl -X POST http://localhost:8080/api/user/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123",
+    "email": "test@example.com"
+  }'
+
+# 用户登录
+curl -X POST http://localhost:8080/api/user/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123"
+  }'
+```
+
+### 3. 商品服务接口
+```bash
+# 获取商品列表
+curl http://localhost:8080/api/product/list
+
+# 获取商品详情
+curl http://localhost:8080/api/product/1/detail
+```
+
+## 监控与日志
+
+### Nacos控制台
+- URL: http://localhost:8848/nacos
+- 功能：
+  - 服务列表查看
+  - 配置管理
+  - 配置历史版本
+  - 配置监听查询
+
+### 应用日志
+```bash
+# 查看user-service日志
+docker-compose logs -f user-service
+
+# 查看所有服务日志
+docker-compose logs -f
+```
+
+### 配置变更历史
+在Nacos控制台的"配置管理" -> "历史版本"中可以查看配置的变更历史，支持版本回滚。
+
+## 常见问题
+
+### Q1: 服务启动失败，提示无法连接Nacos
+**解决方案**：
+1. 确认Nacos服务已启动：`docker-compose ps`
+2. 检查Nacos日志：`docker-compose logs secondhand-nacos`
+3. 确认网络连通性：`ping secondhand-nacos`（容器内）或 `ping localhost`（主机）
+
+### Q2: 配置不生效
+**解决方案**：
+1. 检查Nacos中配置的Data ID是否正确
+2. 确认Group和Namespace配置正确
+3. 查看服务日志，确认配置加载成功
+4. 确保Bean标记了`@RefreshScope`注解
+
+### Q3: 配置修改后不刷新
+**解决方案**：
+1. 确认配置中`refresh-enabled: true`
+2. 检查Bean是否标记`@RefreshScope`
+3. 查看Nacos推送日志
+4. 尝试重启服务
+
+### Q4: 多环境配置如何切换
+**解决方案**：
+```bash
+# 启动时指定profile
+java -jar user-service.jar --spring.profiles.active=test
+
+# 或通过环境变量
+export SPRING_PROFILES_ACTIVE=prod
+java -jar user-service.jar
+```
 
 ## 项目结构
 
 ```
 secondhand-microservices/
-├── user-service/
-│   ├── src/main/java/com/zjgsu/lll/secondhand/
-│   │   ├── client/          # Feign客户端
-│   │   │   ├── UserClient.java
-│   │   │   └── UserClientFallback.java
-│   │   ├── config/          # 配置类
-│   │   │   └── LoadBalancerConfig.java
-│   │   ├── controller/      # 控制器
-│   │   ├── service/         # 业务逻辑
-│   │   ├── entity/          # 实体类
-│   │   ├── repository/      # 数据访问
-│   │   └── common/          # 公共类（Result等）
-│   └── src/main/resources/
-│       └── application.yml
-├── product-service/
-│   └── (结构同上)
-├── order-service/
-│   └── (结构同上)
-├── comment-service/
-│   └── (结构同上)
-└── pom.xml
+├── user-service/               # 用户服务
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/
+│   │       └── resources/
+│   │           ├── application.yml
+│   │           └── bootstrap.yml  # ✨新增
+│   └── pom.xml                    # ✨已更新
+├── product-service/            # 商品服务
+├── order-service/              # 订单服务
+├── comment-service/            # 评论服务
+├── gateway-service/            # 网关服务
+├── nacos-configs/              # ✨新增：Nacos配置文件目录
+│   ├── README.md
+│   ├── common-config.yaml
+│   ├── user-service-dev.yaml
+│   ├── product-service-dev.yaml
+│   ├── order-service-dev.yaml
+│   ├── comment-service-dev.yaml
+│   └── gateway-service-dev.yaml
+├── docker-compose.yml
+├── pom.xml
+└── README-阶段5.md             # ✨本文件
 ```
 
-## 前置环境要求
+## 技术亮点
 
-1. **JDK 21**
-2. **Maven 3.6+**
-3. **MySQL 8.0+**
-4. **Nacos 2.2.3**
-5. **Sentinel Dashboard 1.8+**（可选，用于监控）
+### 1. 配置集中管理
+- 所有服务配置统一存储在Nacos
+- 便于配置的统一管理和维护
+- 支持配置版本管理和回滚
 
-## 快速开始
+### 2. 动态配置刷新
+- 使用`@RefreshScope`实现配置热更新
+- 无需重启服务即可生效
+- 提高系统可用性和运维效率
 
-详细的环境配置和启动步骤请参考 `启动指南.md` 文件。
+### 3. 多环境支持
+- 通过Namespace实现环境隔离
+- dev/test/prod环境配置独立
+- 防止配置误操作影响生产环境
 
-## API接口文档
+### 4. 配置共享与继承
+- common-config.yaml包含通用配置
+- 服务特定配置继承通用配置
+- 减少配置冗余，便于维护
 
-### 用户服务 (user-service:8081)
+## 下一步计划
 
-- `GET /users` - 获取所有用户
-- `GET /users/{id}` - 根据ID获取用户
-- `GET /users/username/{username}` - 根据用户名获取用户
-- `POST /users` - 创建用户
-- `PUT /users/{id}` - 更新用户
-- `DELETE /users/{id}` - 删除用户
-- `POST /users/login` - 用户登录
+### 阶段6：分布式事务（可选）
+- [ ] 集成Seata实现分布式事务
+- [ ] TCC模式实现订单创建事务
+- [ ] 测试事务回滚机制
 
-### 商品服务 (product-service:8082)
+### 阶段7：链路追踪（可选）
+- [ ] 集成Sleuth和Zipkin
+- [ ] 实现全链路追踪
+- [ ] 可视化服务调用链
 
-- `GET /products` - 获取所有商品
-- `GET /products/{id}` - 根据ID获取商品
-- `GET /products/status/{status}` - 根据状态获取商品
-- `GET /products/seller/{sellerId}` - 根据卖家ID获取商品
-- `GET /products/category/{category}` - 根据分类获取商品
-- `GET /products/search?keyword={keyword}` - 搜索商品
-- `POST /products` - 创建商品
-- `PUT /products/{id}` - 更新商品
-- `DELETE /products/{id}` - 删除商品
-- `PUT /products/{id}/status/{status}` - 更新商品状态
-- `PUT /products/{id}/reduce-stock/{quantity}` - 减少库存
+### 阶段8：服务监控（可选）
+- [ ] 集成Prometheus和Grafana
+- [ ] 添加业务指标监控
+- [ ] 配置告警规则
 
-### 订单服务 (order-service:8083)
+## 参考资料
 
-- `GET /orders` - 获取所有订单
-- `GET /orders/{id}` - 根据ID获取订单
-- `GET /orders/orderNo/{orderNo}` - 根据订单号获取订单
-- `GET /orders/buyer/{buyerId}` - 根据买家ID获取订单
-- `GET /orders/seller/{sellerId}` - 根据卖家ID获取订单
-- `GET /orders/status/{status}` - 根据状态获取订单
-- `POST /orders` - 创建订单
-- `PUT /orders/{id}/pay` - 支付订单
-- `PUT /orders/{id}/ship` - 发货
-- `PUT /orders/{id}/finish` - 完成订单
-- `DELETE /orders/{id}` - 取消订单
+- [Nacos官方文档](https://nacos.io/zh-cn/docs/quick-start.html)
+- [Spring Cloud Alibaba文档](https://github.com/alibaba/spring-cloud-alibaba/wiki)
+- [Spring Cloud Config文档](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/)
 
-### 评论服务 (comment-service:8084)
+## 作者
 
-- `GET /comments` - 获取所有评论
-- `GET /comments/{id}` - 根据ID获取评论
-- `GET /comments/product/{productId}` - 根据商品ID获取评论
-- `GET /comments/user/{userId}` - 根据用户ID获取评论
-- `GET /comments/order/{orderId}` - 根据订单ID获取评论
-- `POST /comments` - 创建评论
-- `DELETE /comments/{id}` - 删除评论
+- 姓名：[你的姓名]
+- 学号：[你的学号]
+- 日期：2025年12月23日
 
-## 测试服务间调用
+## 许可证
 
-### 测试场景1：创建订单（调用商品服务）
-
-```bash
-# 1. 先创建一个商品
-curl -X POST http://localhost:8082/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "二手MacBook Pro",
-    "description": "2020款，95成新",
-    "price": 8888.00,
-    "category": "电子产品",
-    "sellerId": 1,
-    "stock": 1
-  }'
-
-# 2. 创建订单（会调用商品服务获取商品信息）
-curl -X POST http://localhost:8083/orders \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": 2,
-    "productId": 1,
-    "totalPrice": 8888.00,
-    "shippingAddress": "浙江省杭州市某某街道",
-    "contactPhone": "13800138000"
-  }'
-```
-
-### 测试场景2：支付订单（调用商品服务减少库存）
-
-```bash
-# 支付订单（会调用商品服务减少库存）
-curl -X PUT http://localhost:8083/orders/1/pay
-```
-
-### 测试场景3：创建评论（调用订单服务验证）
-
-```bash
-# 创建评论（会调用订单服务验证订单）
-curl -X POST http://localhost:8084/comments \
-  -H "Content-Type: application/json" \
-  -d '{
-    "orderId": 1,
-    "userId": 2,
-    "productId": 1,
-    "rating": 5,
-    "content": "商品很好，卖家服务态度也很棒！"
-  }'
-```
-
-### 测试熔断降级
-
-```bash
-# 1. 停止product-service服务
-
-# 2. 尝试创建订单，会触发降级逻辑
-curl -X POST http://localhost:8083/orders \
-  -H "Content-Type: application/json" \
-  -d '{...}'
-
-# 预期返回：
-# {
-#   "code": 500,
-#   "message": "商品服务暂时不可用，请稍后重试",
-#   "data": null
-# }
-```
-
-## 负载均衡测试
-
-1. 启动同一服务的多个实例（修改端口）
-2. 观察Nacos控制台，确认多个实例已注册
-3. 多次调用服务接口
-4. 查看日志，确认请求被分发到不同实例（轮询策略）
-
-## 监控
-
-### Nacos控制台
-
-- 访问: http://localhost:8848/nacos
-- 用户名/密码: nacos/nacos
-- 功能: 查看服务注册情况、实例健康状态
-
-### Sentinel控制台（可选）
-
-- 访问: http://localhost:8080
-- 用户名/密码: sentinel/sentinel
-- 功能: 实时监控、流控规则、熔断规则
-
-## 常见问题
-
-### 1. Feign调用超时
-
-解决方案：调整`application.yml`中的超时配置
-```yaml
-spring:
-  cloud:
-    openfeign:
-      client:
-        config:
-          default:
-            connect-timeout: 10000
-            read-timeout: 20000
-```
-
-### 2. 熔断器未生效
-
-确认以下配置：
-- Sentinel依赖已添加
-- `spring.cloud.openfeign.sentinel.enabled=true`
-- Fallback类已注册为Bean（@Component）
-
-### 3. 服务调用失败
-
-检查：
-- 目标服务是否在Nacos中注册成功
-- 服务名称是否正确（与application.name一致）
-- 网络连接是否正常
-
-## 项目亮点
-
-1. **微服务架构**: 采用Spring Cloud Alibaba生态，实现服务拆分和独立部署
-2. **服务间通信**: 使用OpenFeign实现声明式服务调用，代码简洁优雅
-3. **负载均衡**: 集成LoadBalancer实现客户端负载均衡，提高系统可用性
-4. **熔断降级**: Sentinel熔断保护，保证系统稳定性
-5. **服务治理**: Nacos统一管理服务注册发现
-6. **独立数据库**: 每个服务独立数据库，符合微服务最佳实践
-
-## 后续规划
-
-- 阶段4: 网关与统一认证
-- 阶段5: 分布式事务
-- 阶段6: 链路追踪与监控
-- 阶段7: 容器化部署（Docker + Kubernetes）
-
+本项目仅用于学习和教学目的。

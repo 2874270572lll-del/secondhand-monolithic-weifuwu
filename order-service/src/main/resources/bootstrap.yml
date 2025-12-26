@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: order-service
+
+  cloud:
+    nacos:
+      server-addr: secondhand-nacos:8848
+
+      config:
+        file-extension: yaml
+        namespace: dev
+        group: DEFAULT_GROUP
+        refresh-enabled: true
+        shared-configs:
+          - data-id: common-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+
+      discovery:
+        server-addr: secondhand-nacos:8848
+        namespace: dev
+        group: DEFAULT_GROUP
+
+  profiles:
+    active: dev
