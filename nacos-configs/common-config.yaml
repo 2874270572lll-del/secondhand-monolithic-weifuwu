@@ -1,0 +1,65 @@
+# 通用配置 - 所有微服务共享
+
+# Jackson配置
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+
+# JPA通用配置
+  jpa:
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# OpenFeign配置
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 20000
+      compression:
+        request:
+          enabled: true
+        response:
+          enabled: true
+      # 启用Sentinel支持
+      sentinel:
+        enabled: true
+
+    # Sentinel配置
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+      eager: true
+
+# JWT配置
+jwt:
+  secret: Nqpdqkh6se8xtRYwLNjcEvopb1CtTwRN0DxvR0lrGGIiNCoTbKa91g9vbQE+pg4fwqd17I9MLq7rLKP4D5MSVg==
+  expiration: 86400000  # 24小时（毫秒）
+
+# 业务配置（可动态刷新）
+business:
+  feature:
+    enabled: true  # 功能开关
+  max-page-size: 50  # 每页最大记录数
+  welcome-message: 欢迎使用二手交易平台 - 配置中心版
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.zjgsu.lll.secondhand: DEBUG
+    org.springframework.web: INFO
+    org.springframework.cloud: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

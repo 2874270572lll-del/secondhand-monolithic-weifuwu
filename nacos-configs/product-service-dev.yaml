@@ -1,0 +1,36 @@
+# 商品服务配置
+
+server:
+  port: 8082
+
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://secondhand-mysql:3306/product_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: lilili2004
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# 商品服务特定配置
+product-service:
+  image:
+    max-size: 5MB
+    allowed-types:
+      - image/jpeg
+      - image/png
+      - image/gif
+  cache:
+    ttl: 3600  # 缓存过期时间（秒）
+
+logging:
+  level:
+    com.zjgsu.lll.secondhand: DEBUG
