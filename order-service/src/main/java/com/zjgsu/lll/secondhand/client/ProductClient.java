@@ -15,10 +15,10 @@ import java.math.BigDecimal;
         configuration = FeignConfig.class  // 添加这行
 )
 public interface ProductClient {
-    @GetMapping("/products/{id}")
+    @GetMapping("/product/{id}")
     Result<ProductDTO> getProductById(@PathVariable("id") Long id);
 
-    @PutMapping("/products/{id}/reduce-stock/{quantity}")
+    @PutMapping("/product/{id}/reduce-stock/{quantity}")
     Result<Void> reduceStock(@PathVariable("id") Long id, @PathVariable("quantity") Integer quantity);
 }
 

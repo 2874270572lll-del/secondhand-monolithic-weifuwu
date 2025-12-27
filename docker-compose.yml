@@ -28,6 +28,29 @@ services:
       start_period: 30s
     restart: always
 
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: secondhand-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      TZ: Asia/Shanghai
+    ports:
+      - "5672:5672"    # AMQP端口
+      - "15672:15672"  # 管理界面
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - secondhand-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: always
+
   # Nacos 服务注册中心
   nacos:
     image: nacos/nacos-server:v2.2.3
@@ -177,10 +200,16 @@ services:
       - SPRING_DATASOURCE_PASSWORD=lilili2004
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
       - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=dev
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=admin123
     depends_on:
       mysql:
         condition: service_healthy
       nacos:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - secondhand-net
@@ -233,3 +262,4 @@ networks:
 
 volumes:
   mysql-data:
+  rabbitmq-data:

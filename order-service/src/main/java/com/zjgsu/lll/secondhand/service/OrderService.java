@@ -4,8 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zjgsu.lll.secondhand.client.ProductClient;
 import com.zjgsu.lll.secondhand.common.Result;
 import com.zjgsu.lll.secondhand.entity.Order;
+import com.zjgsu.lll.secondhand.event.OrderCreatedEvent;
 import com.zjgsu.lll.secondhand.exception.BusinessException;
+import com.zjgsu.lll.secondhand.producer.OrderProducer;
 import com.zjgsu.lll.secondhand.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +21,19 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
     private final ObjectMapper objectMapper;
+    private final OrderProducer orderProducer;
 
-    public OrderService(OrderRepository orderRepository, ProductClient productClient, ObjectMapper objectMapper) {
+    public OrderService(OrderRepository orderRepository, ProductClient productClient,
+                       ObjectMapper objectMapper, OrderProducer orderProducer) {
         this.orderRepository = orderRepository;
         this.productClient = productClient;
         this.objectMapper = objectMapper;
+        this.orderProducer = orderProducer;
     }
 
     public List<Order> getAllOrders() {
@@ -90,7 +99,30 @@ public class OrderService {
         order.setOrderNo(generateOrderNo());
         order.setStatus(0); // 0-待支付
 
-        return orderRepository.save(order);
+        // 保存订单
+        Order savedOrder = orderRepository.save(order);
+
+        // 发送订单创建消息到RabbitMQ（异步通知）
+        try {
+            OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getOrderNo(),
+                savedOrder.getBuyerId(),
+                savedOrder.getSellerId(),
+                savedOrder.getProductId(),
+                savedOrder.getTotalAmount(),
+                savedOrder.getShippingAddress(),
+                savedOrder.getContactPhone(),
+                savedOrder.getCreateTime()
+            );
+            orderProducer.sendOrderCreatedEvent(event);
+        } catch (Exception e) {
+            // 消息发送失败不影响订单创建
+            log.error("发送订单创建消息失败，但订单已创建成功: orderId={}, error={}",
+                    savedOrder.getId(), e.getMessage());
+        }
+
+        return savedOrder;
     }
 
     @Transactional

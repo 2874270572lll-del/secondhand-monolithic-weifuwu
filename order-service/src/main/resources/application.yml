@@ -20,6 +20,22 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:admin}
+    password: ${SPRING_RABBITMQ_PASSWORD:admin123}
+    listener:
+      simple:
+        acknowledge-mode: manual  # 手动确认模式
+        prefetch: 1  # 每次只处理一条消息
+        retry:
+          enabled: true
+          initial-interval: 3000
+          max-attempts: 3
+          multiplier: 2
+    publisher-confirm-type: correlated  # 发布确认
+    publisher-returns: true  # 发布返回
   cloud:
     nacos:
       discovery:
