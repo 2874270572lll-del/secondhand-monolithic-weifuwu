@@ -108,6 +108,9 @@ jwt:
     - /api/product/category/*   # GET 按分类查询
     - /api/product/search       # GET 搜索
 
+    # 评论相关
+    - /api/comment/product/*    # GET 查看商品评论
+
 
 # 日志配置
 logging:

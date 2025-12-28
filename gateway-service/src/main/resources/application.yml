@@ -18,7 +18,57 @@ spring:
 
       # 路由配置
       routes:
+        # === 带 /api 前缀的路由（前端使用） ===
+        # 认证服务路由
+        - id: api-auth-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
         # 用户服务路由
+        - id: api-user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1
+
+        # 商品服务路由
+        - id: api-product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - StripPrefix=1
+
+        # 订单服务路由
+        - id: api-order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=1
+
+        # 评论服务路由
+        - id: api-comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/api/comments/**
+          filters:
+            - StripPrefix=1
+
+        # === 不带 /api 前缀的路由（保留向后兼容） ===
+        # 用户服务路由 - /users/** (直接访问UserController的路径)
+        - id: user-service-direct
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=0
+
+        # 用户服务路由 - /user/** (保留向后兼容)
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -42,7 +92,15 @@ spring:
           filters:
             - StripPrefix=1
 
-        # 评论服务路由
+        # 评论服务路由 - /comments/** (直接访问CommentController的路径)
+        - id: comment-service-direct
+          uri: lb://comment-service
+          predicates:
+            - Path=/comments/**
+          filters:
+            - StripPrefix=0
+
+        # 评论服务路由 - /comment/** (保留向后兼容)
         - id: comment-service
           uri: lb://comment-service
           predicates:
@@ -75,6 +133,20 @@ server:
 jwt:
   secret: aHR0cHM6Ly9naXRodWIuY29tL2Nsb3VkLWFjYWRlbXktc2Vjb25kaGFuZC1wbGF0Zm9ybS0yMDI0LXNlY3VyZS1qd3Qtc2VjcmV0LWtleQ==
   expiration: 86400000  # 24小时（毫秒）
+  whitelist:
+    - /api/auth/**
+    - /auth/**
+    - /actuator/**
+    - /user/register
+    - /user/login
+    - /api/product
+    - /api/product/*
+    - /product
+    - /product/*
+    - /api/comments/product/*
+    - /comments/product/*
+    - /api/comment/product/*
+    - /comment/product/*
 
 # 白名单配置（不需要JWT验证的路径）
 auth:

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二手交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #007bff !important;
+        }
+        .product-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .product-img {
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+        .price {
+            color: #e4393c;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+        .order-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+        .status-0 { background: #ffc107; color: #000; }
+        .status-1 { background: #28a745; color: #fff; }
+        .status-2 { background: #17a2b8; color: #fff; }
+        .status-3 { background: #6c757d; color: #fff; }
+        .status-4 { background: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#" onclick="showPage('products')">
+                <i class="fas fa-shopping-bag"></i> 二手交易平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" id="nav-menu">
+                    <!-- 未登录状态 -->
+                    <li class="nav-item guest-only">
+                        <a class="nav-link" href="#" onclick="showPage('login')">登录</a>
+                    </li>
+                    <li class="nav-item guest-only">
+                        <a class="nav-link" href="#" onclick="showPage('register')">注册</a>
+                    </li>
+                    <!-- 已登录状态 -->
+                    <li class="nav-item user-only" style="display:none;">
+                        <a class="nav-link" href="#" onclick="showPage('products')">
+                            <i class="fas fa-list"></i> 商品列表
+                        </a>
+                    </li>
+                    <li class="nav-item user-only" style="display:none;">
+                        <a class="nav-link" href="#" onclick="showPage('publish')">
+                            <i class="fas fa-plus-circle"></i> 发布商品
+                        </a>
+                    </li>
+                    <li class="nav-item user-only" style="display:none;">
+                        <a class="nav-link" href="#" onclick="showPage('orders')">
+                            <i class="fas fa-clipboard-list"></i> 我的订单
+                        </a>
+                    </li>
+                    <li class="nav-item user-only" style="display:none;">
+                        <a class="nav-link" href="#" id="username-display" onclick="showPage('profile')"></a>
+                    </li>
+                    <li class="nav-item user-only" style="display:none;">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> 退出
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <div class="container mt-4">
+        <!-- 登录页面 -->
+        <div id="login-page" class="page-section">
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="card shadow">
+                        <div class="card-body p-5">
+                            <h3 class="text-center mb-4">用户登录</h3>
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="login-username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="login-password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">登录</button>
+                                <div class="text-center mt-3">
+                                    <a href="#" onclick="showPage('register')">还没有账号？立即注册</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 注册页面 -->
+        <div id="register-page" class="page-section">
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="card shadow">
+                        <div class="card-body p-5">
+                            <h3 class="text-center mb-4">用户注册</h3>
+                            <form id="register-form">
+                                <div class="mb-3">
+                                    <label class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="reg-username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">邮箱</label>
+                                    <input type="email" class="form-control" id="reg-email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="reg-password" required
+                                           minlength="8" placeholder="至少8位，包含字母和数字">
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">注册</button>
+                                <div class="text-center mt-3">
+                                    <a href="#" onclick="showPage('login')">已有账号？立即登录</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品列表页面 -->
+        <div id="products-page" class="page-section active">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-shopping-bag"></i> 商品列表</h2>
+                <button class="btn btn-outline-primary" onclick="loadProducts()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+            <div id="products-container" class="row g-4">
+                <!-- 商品卡片将在这里动态加载 -->
+            </div>
+        </div>
+
+        <!-- 商品详情页面 -->
+        <div id="product-detail-page" class="page-section">
+            <button class="btn btn-outline-secondary mb-3" onclick="showPage('products')">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </button>
+            <div id="product-detail-container">
+                <!-- 商品详情将在这里动态加载 -->
+            </div>
+        </div>
+
+        <!-- 发布商品页面 -->
+        <div id="publish-page" class="page-section">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h3 class="mb-4"><i class="fas fa-plus-circle"></i> 发布商品</h3>
+                            <form id="publish-form">
+                                <div class="mb-3">
+                                    <label class="form-label">商品名称</label>
+                                    <input type="text" class="form-control" id="product-name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">商品描述</label>
+                                    <textarea class="form-control" id="product-description" rows="4" required></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">价格（元）</label>
+                                        <input type="number" class="form-control" id="product-price"
+                                               step="0.01" min="0.01" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">库存</label>
+                                        <input type="number" class="form-control" id="product-stock"
+                                               min="1" value="1" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">分类</label>
+                                    <select class="form-select" id="product-category" required>
+                                        <option value="">请选择分类</option>
+                                        <option value="数码产品">数码产品</option>
+                                        <option value="家用电器">家用电器</option>
+                                        <option value="图书音像">图书音像</option>
+                                        <option value="服装鞋帽">服装鞋帽</option>
+                                        <option value="家居用品">家居用品</option>
+                                        <option value="运动户外">运动户外</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">发布商品</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的订单页面 -->
+        <div id="orders-page" class="page-section">
+            <h2 class="mb-4"><i class="fas fa-clipboard-list"></i> 我的订单</h2>
+            <div id="orders-container">
+                <!-- 订单列表将在这里动态加载 -->
+            </div>
+        </div>
+
+        <!-- 个人中心页面 -->
+        <div id="profile-page" class="page-section">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h3 class="mb-4"><i class="fas fa-user-circle"></i> 个人中心</h3>
+
+                            <!-- 用户基本信息 -->
+                            <div class="mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">基本信息</h5>
+                                <div id="user-info-container">
+                                    <!-- 用户信息将在这里动态加载 -->
+                                </div>
+                            </div>
+
+                            <!-- 统计信息 -->
+                            <div class="mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">我的统计</h5>
+                                <div class="row text-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h3 class="text-primary" id="stat-orders">-</h3>
+                                                <p class="mb-0 text-muted">我的订单</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h3 class="text-success" id="stat-products">-</h3>
+                                                <p class="mb-0 text-muted">发布商品</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h3 class="text-warning" id="stat-sales">-</h3>
+                                                <p class="mb-0 text-muted">卖出订单</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 快捷操作 -->
+                            <div>
+                                <h5 class="border-bottom pb-2 mb-3">快捷操作</h5>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button class="btn btn-outline-primary" onclick="showPage('orders')">
+                                        <i class="fas fa-clipboard-list"></i> 查看我的订单
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="showPage('publish')">
+                                        <i class="fas fa-plus-circle"></i> 发布商品
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="loadMyProducts()">
+                                        <i class="fas fa-box"></i> 我发布的商品
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑地址模态框 -->
+    <div class="modal fade" id="editAddressModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">编辑个人信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-address-form">
+                        <div class="mb-3">
+                            <label class="form-label">手机号</label>
+                            <input type="tel" class="form-control" id="edit-phone"
+                                   placeholder="请输入手机号" maxlength="11">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">地址</label>
+                            <textarea class="form-control" id="edit-address" rows="3"
+                                      placeholder="请输入详细地址"></textarea>
+                        </div>
+                        <div class="alert alert-info small mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            注意：此信息将同步保存到服务器
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAddressInfo()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

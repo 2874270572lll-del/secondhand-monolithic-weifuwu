@@ -48,7 +48,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 200s
     restart: always
 
   # Nacos 服务注册中心
@@ -249,6 +249,17 @@ services:
     environment:
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
       - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=dev
+      - JWT_WHITELIST_0=/api/auth/**
+      - JWT_WHITELIST_1=/auth/**
+      - JWT_WHITELIST_2=/actuator/**
+      - JWT_WHITELIST_3=/user/register
+      - JWT_WHITELIST_4=/user/login
+      - JWT_WHITELIST_5=/api/product
+      - JWT_WHITELIST_6=/api/product/*
+      - JWT_WHITELIST_7=/product
+      - JWT_WHITELIST_8=/product/*
+      - JWT_WHITELIST_9=/api/comment/product/*
+      - JWT_WHITELIST_10=/comment/product/*
     depends_on:
       nacos:
         condition: service_healthy

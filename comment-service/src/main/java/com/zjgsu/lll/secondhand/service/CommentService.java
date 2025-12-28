@@ -44,15 +44,18 @@ public class CommentService {
 
     @Transactional
     public Comment createComment(Comment comment) {
-        // Call order service to validate order
-        Result<?> orderResult = orderClient.getOrderById(comment.getOrderId());
+        // 只有当orderId大于0时才验证订单
+        if (comment.getOrderId() != null && comment.getOrderId() > 0) {
+            // Call order service to validate order
+            Result<?> orderResult = orderClient.getOrderById(comment.getOrderId());
 
-        if (orderResult.getCode() != 200 || orderResult.getData() == null) {
-            throw new BusinessException("Order not found");
+            if (orderResult.getCode() != 200 || orderResult.getData() == null) {
+                throw new BusinessException("Order not found");
+            }
+
+            // Note: In a real implementation, you would parse the order data
+            // and validate the order status and buyer
         }
-
-        // Note: In a real implementation, you would parse the order data
-        // and validate the order status and buyer
 
         if (comment.getRating() < 1 || comment.getRating() > 5) {
             throw new BusinessException("Rating must be between 1 and 5");
