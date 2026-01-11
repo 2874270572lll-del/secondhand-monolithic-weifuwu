@@ -3,6 +3,7 @@ package com.zjgsu.lll.secondhand.controller;
 import com.zjgsu.lll.secondhand.common.Result;
 import com.zjgsu.lll.secondhand.entity.Product;
 import com.zjgsu.lll.secondhand.service.ProductService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +56,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public Result<List<Product>> getAllProducts() {
+    public Result<List<Product>> getAllProducts(HttpServletResponse response) {
         log.info("🔵 [IP:{}] [{}:{}] 处理请求: GET /products", containerIp, instanceId, serverPort);
+        // 添加实例标识到响应头，用于负载均衡测试
+        response.setHeader("X-Instance-Id", instanceId != null ? instanceId : "unknown");
+        response.setHeader("X-Instance-IP", containerIp);
+        response.setHeader("X-Server-Port", serverPort);
         return Result.success(productService.getAllProducts());
     }
 

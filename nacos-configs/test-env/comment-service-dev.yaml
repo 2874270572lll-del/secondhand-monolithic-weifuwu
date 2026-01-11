@@ -1,0 +1,33 @@
+# 评论服务配置
+
+server:
+  port: 8084
+
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://secondhand-mysql:3306/comment_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: lilili2004
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# 评论服务特定配置
+comment-service:
+  content:
+    max-length: 500
+  moderation:
+    enabled: true
+    keywords-file: /config/sensitive-words.txt
+
+logging:
+  level:
+    com.zjgsu.lll.secondhand: DEBUG

@@ -87,7 +87,7 @@ spring:
 # JWT配置
 jwt:
   # JWT密钥（至少64字节，用于HS512算法）
-  secret: Nqpdqkh6se8xtRYwLNjcEvopb1CtTwRN0DxvR0lrGGIiNCoTbKa91g9vbQE+pg4fwqd17I9MLq7rLKP4D5MSVg==
+  secret: +s5qdTZp1Nud2mScDkcK+Zm12dRtpPunXOKDKP5jndflcj2Jdoq2mF7wGK2vNozREFhCpY4Jekp+TvAy96f1jQ==
   # Token有效期（毫秒），7天
   expiration: 604800000
   # 白名单（不需要认证的路径）
@@ -118,13 +118,3 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     com.zjgsu.lll.secondhand: DEBUG
     org.springframework.web: INFO
-
-  # Actuator配置
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: gateway
-    endpoint:
-      gateway:
-        enabled: true

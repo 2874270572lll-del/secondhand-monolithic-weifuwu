@@ -1,0 +1,35 @@
+# 用户服务配置
+
+server:
+  port: 8081
+
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://secondhand-mysql:3306/user_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: lilili2004
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# 用户服务特定配置
+user-service:
+  jwt:
+    issuer: user-service
+  password:
+    salt-rounds: 10
+
+logging:
+  level:
+    com.zjgsu.lll.secondhand: DEBUG

@@ -15,5 +15,10 @@ spring:
 server:
   port: 8081
 
+# JWT配置（必须与gateway-service保持一致）
+jwt:
+  secret: Ncm1EmKYSJ6hwS9ML1cQ4wN9wBmuBDCMoOefzYHDLJQffU6uo+xkset91aK2Aw3+Brx8oSHJGByEHa1AXTmnPA==
+  expiration: 86400000
+
 # 注意：以下配置可以被Nacos Config中的配置覆盖
 # JPA、Jackson、OpenFeign、Sentinel等配置已迁移到Nacos Config

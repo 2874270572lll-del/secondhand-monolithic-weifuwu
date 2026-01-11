@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @FeignClient(name = "order-service", fallback = OrderClientFallback.class)
 public interface OrderClient {
 
-    @GetMapping("/orders/{id}")
+    @GetMapping("/order/{id}")
     Result<OrderDTO> getOrderById(@PathVariable("id") Long id);
 }
 
